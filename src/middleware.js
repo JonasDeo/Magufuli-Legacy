@@ -1,7 +1,7 @@
 import { verifyToken } from "./auth.js";
-import { db } from "./db.js";
+import { query } from "./db.js";
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const auth = req.headers.authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
   if (!token) {
@@ -10,11 +10,12 @@ export function requireAuth(req, res, next) {
 
   try {
     const payload = verifyToken(token);
-    const user = db
-      .prepare(
-        "SELECT id, name, email, role, is_banned AS isBanned, created_at AS createdAt FROM users WHERE id = ?",
-      )
-      .get(payload.sub);
+    const { rows } = await query(
+      `SELECT id, name, email, role, is_banned AS "isBanned", created_at AS "createdAt"
+       FROM users WHERE id = $1`,
+      [payload.sub],
+    );
+    const user = rows[0];
     if (!user || user.isBanned) {
       return res.status(401).json({ error: "Unauthorized" });
     }

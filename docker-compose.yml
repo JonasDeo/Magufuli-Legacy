@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: magufuli-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: magufuli
+    ports:
+      - "5432:5432"
+    volumes:
+      - magufuli_pg_data:/var/lib/postgresql/data
+
+volumes:
+  magufuli_pg_data:
